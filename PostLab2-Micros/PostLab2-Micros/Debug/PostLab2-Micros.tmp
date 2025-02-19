@@ -1,0 +1,47 @@
+<ASSEMBLER_INFO>
+ <VERSION>2.2.8</VERSION>
+ <DEVICE>"ATmega328P"</DEVICE>
+ <WORKING_DIR>C:\Users\jargu\OneDrive\Generales\Escritorio\Universidad\Quinto semestre\Programacion de Microcontroladores\PostLab2-Micros\PostLab2-Micros\Debug</WORKING_DIR>
+ <INCLUDE_PATH>
+  <DIR>C:/Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.7.374\avrasm\inc</DIR>
+  <DIR>C:\Program Files (x86)\Atmel\Studio\7.0\toolchain\avr8\avrassembler\Include</DIR>
+  <DIR></DIR>
+ </INCLUDE_PATH>
+ <SOURCE_FILE>C:\Users\jargu\OneDrive\Generales\Escritorio\Universidad\Quinto semestre\Programacion de Microcontroladores\PostLab2-Micros\PostLab2-Micros\main.asm</SOURCE_FILE>
+ <INCLUDED_FILES>
+  <FILE>C:/Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.7.374\avrasm\inc\m328Pdef.inc</FILE>
+  <FILE>C:/Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.7.374\avrasm\inc\M328PDEF.inc</FILE>
+ </INCLUDED_FILES>
+ <OBJECT_FILES>
+  <FILE>C:\Users\jargu\OneDrive\Generales\Escritorio\Universidad\Quinto semestre\Programacion de Microcontroladores\PostLab2-Micros\PostLab2-Micros\Debug\PostLab2-Micros.obj</FILE>
+ </OBJECT_FILES>
+ <HEX_FILES>
+  <FILE>PostLab2-Micros.hex</FILE>
+ </HEX_FILES>
+ <OUTPUT_FILES>
+  <FILE>PostLab2-Micros.map</FILE>
+  <FILE>PostLab2-Micros.lss</FILE>
+ </OUTPUT_FILES>
+ <LABELS>
+  <SETUP><FILE>C:\Users\jargu\OneDrive\Generales\Escritorio\Universidad\Quinto semestre\Programacion de Microcontroladores\PostLab2-Micros\PostLab2-Micros\main.asm</FILE><LINE>57</LINE></SETUP>
+  <INIT_TMR0><FILE>C:\Users\jargu\OneDrive\Generales\Escritorio\Universidad\Quinto semestre\Programacion de Microcontroladores\PostLab2-Micros\PostLab2-Micros\main.asm</FILE><LINE>151</LINE></INIT_TMR0>
+  <LOOP><FILE>C:\Users\jargu\OneDrive\Generales\Escritorio\Universidad\Quinto semestre\Programacion de Microcontroladores\PostLab2-Micros\PostLab2-Micros\main.asm</FILE><LINE>94</LINE></LOOP>
+  <CONTADOR><FILE>C:\Users\jargu\OneDrive\Generales\Escritorio\Universidad\Quinto semestre\Programacion de Microcontroladores\PostLab2-Micros\PostLab2-Micros\main.asm</FILE><LINE>101</LINE></CONTADOR>
+  <DISPLAY><FILE>C:\Users\jargu\OneDrive\Generales\Escritorio\Universidad\Quinto semestre\Programacion de Microcontroladores\PostLab2-Micros\PostLab2-Micros\main.asm</FILE><LINE>166</LINE></DISPLAY>
+  <WAIT_OVERFLOW><FILE>C:\Users\jargu\OneDrive\Generales\Escritorio\Universidad\Quinto semestre\Programacion de Microcontroladores\PostLab2-Micros\PostLab2-Micros\main.asm</FILE><LINE>103</LINE></WAIT_OVERFLOW>
+  <ACTUALIZA_PORT><FILE>C:\Users\jargu\OneDrive\Generales\Escritorio\Universidad\Quinto semestre\Programacion de Microcontroladores\PostLab2-Micros\PostLab2-Micros\main.asm</FILE><LINE>141</LINE></ACTUALIZA_PORT>
+  <RESET_COUNTER><FILE>C:\Users\jargu\OneDrive\Generales\Escritorio\Universidad\Quinto semestre\Programacion de Microcontroladores\PostLab2-Micros\PostLab2-Micros\main.asm</FILE><LINE>135</LINE></RESET_COUNTER>
+  <LECTURA><FILE>C:\Users\jargu\OneDrive\Generales\Escritorio\Universidad\Quinto semestre\Programacion de Microcontroladores\PostLab2-Micros\PostLab2-Micros\main.asm</FILE><LINE>168</LINE></LECTURA>
+  <SEGUIR><FILE>C:\Users\jargu\OneDrive\Generales\Escritorio\Universidad\Quinto semestre\Programacion de Microcontroladores\PostLab2-Micros\PostLab2-Micros\main.asm</FILE><LINE>175</LINE></SEGUIR>
+  <DELAY><FILE>C:\Users\jargu\OneDrive\Generales\Escritorio\Universidad\Quinto semestre\Programacion de Microcontroladores\PostLab2-Micros\PostLab2-Micros\main.asm</FILE><LINE>224</LINE></DELAY>
+  <VERIFICAR_INC><FILE>C:\Users\jargu\OneDrive\Generales\Escritorio\Universidad\Quinto semestre\Programacion de Microcontroladores\PostLab2-Micros\PostLab2-Micros\main.asm</FILE><LINE>187</LINE></VERIFICAR_INC>
+  <INCREMENTAR><FILE>C:\Users\jargu\OneDrive\Generales\Escritorio\Universidad\Quinto semestre\Programacion de Microcontroladores\PostLab2-Micros\PostLab2-Micros\main.asm</FILE><LINE>193</LINE></INCREMENTAR>
+  <DECREMENTAR><FILE>C:\Users\jargu\OneDrive\Generales\Escritorio\Universidad\Quinto semestre\Programacion de Microcontroladores\PostLab2-Micros\PostLab2-Micros\main.asm</FILE><LINE>207</LINE></DECREMENTAR>
+  <CONTINUAR_INC><FILE>C:\Users\jargu\OneDrive\Generales\Escritorio\Universidad\Quinto semestre\Programacion de Microcontroladores\PostLab2-Micros\PostLab2-Micros\main.asm</FILE><LINE>198</LINE></CONTINUAR_INC>
+  <UNDERFLOW><FILE>C:\Users\jargu\OneDrive\Generales\Escritorio\Universidad\Quinto semestre\Programacion de Microcontroladores\PostLab2-Micros\PostLab2-Micros\main.asm</FILE><LINE>212</LINE></UNDERFLOW>
+  <update_disp_dec><FILE>C:\Users\jargu\OneDrive\Generales\Escritorio\Universidad\Quinto semestre\Programacion de Microcontroladores\PostLab2-Micros\PostLab2-Micros\main.asm</FILE><LINE>214</LINE></update_disp_dec>
+  <SUBDELAY1><FILE>C:\Users\jargu\OneDrive\Generales\Escritorio\Universidad\Quinto semestre\Programacion de Microcontroladores\PostLab2-Micros\PostLab2-Micros\main.asm</FILE><LINE>226</LINE></SUBDELAY1>
+  <SUBDELAY2><FILE>C:\Users\jargu\OneDrive\Generales\Escritorio\Universidad\Quinto semestre\Programacion de Microcontroladores\PostLab2-Micros\PostLab2-Micros\main.asm</FILE><LINE>231</LINE></SUBDELAY2>
+  <SUBDELAY3><FILE>C:\Users\jargu\OneDrive\Generales\Escritorio\Universidad\Quinto semestre\Programacion de Microcontroladores\PostLab2-Micros\PostLab2-Micros\main.asm</FILE><LINE>236</LINE></SUBDELAY3>
+ </LABELS>
+</ASSEMBLER_INFO>
