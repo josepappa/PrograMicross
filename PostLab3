@@ -1,0 +1,227 @@
+;
+; PostLab3-Micros.asm
+;
+; Created: 2/25/2025 3:47:21 PM
+; Author : jargu
+;
+
+
+; Replace with your application code
+;------------------------------------------------------------
+.def COUNTER   = R20       ; Dígito de unidades
+.def TEMP      = R16       ; Registro temporal
+.def OVCNT     = R21       ; Contador de overflow de Timer0
+.def TENS      = R22       ; Dígito de decenas
+.def DIGIT_SEL = R23       ; Flag para selección de display (multiplexado)
+;------------------------------------------------------------
+
+.INCLUDE "M328PDEF.INC"
+
+.ORG	0X0000         ; Vector de reset
+RJMP	INICIO
+
+.ORG	0X0006         ; Vector de interrupción para PCINT0 (PORTB)
+RJMP	ISR_PCINT0
+
+.ORG	0x0020         ; Vector de interrupción para TIMER0 (Overflow)
+RJMP	ISR_TIMER0 
+
+INICIO:
+    ; Configuración de la pila
+    LDI     TEMP, LOW(RAMEND)
+    OUT     SPL, TEMP
+    LDI     TEMP, HIGH(RAMEND)
+    OUT     SPH, TEMP
+
+;---------- Inicializar la tabla de dígitos en la memoria a partir de 0x0100 ---------------------
+    LDI     R18, 0b0000001 ; 0 
+    LDI     XL, 0x00 
+    LDI     XH, 0x01
+    ST      X+, R18 
+
+    LDI     R18, 0b1001111 ; 1 
+    ST      X+, R18
+    LDI     R18, 0b0010010 ; 2
+    ST      X+, R18 
+    LDI     R18, 0b0000110 ; 3 
+    ST      X+, R18 
+    LDI     R18, 0b1001100 ; 4 
+    ST      X+, R18 
+    LDI     R18, 0b0100100 ; 5 
+    ST      X+, R18 
+    LDI     R18, 0b0100000 ; 6 
+    ST      X+, R18
+    LDI     R18, 0b0001111 ; 7 
+    ST      X+, R18
+    LDI     R18, 0b0000000 ; 8 
+    ST      X+, R18
+    LDI     R18, 0b0000100 ; 9 
+    ST      X+, R18    
+;----------------------------------------------------------------------------------------------------------
+
+    ; Configurar el prescaler principal
+
+    LDI     TEMP, (1 << CLKPCE)
+    STS     CLKPR, TEMP          ; Habilitar cambio de prescaler
+    LDI     TEMP, 0b00000100
+    STS     CLKPR, TEMP          ; Configurar prescaler = 16 (16MHz/16 = 1MHz)
+
+    ; Inicializar Timer0
+    CALL    INIT_TMR0
+
+;------------------------ CONFIGURACION DE PUERTOS --------------------------------    
+
+    ; Configurar leds en PORTC (PC0 - PC3) como salidas (para los pushbuttons)
+    LDI		R16, 0X0F        
+    OUT		DDRC, R16  
+	
+    ; Configurar leds en PORTD (PD0 - PD7) como salidas (Display de 7 segmentos)
+    LDI		R16, 0xFF
+    OUT		DDRD, R16
+
+    ; Configurar PB2 y PB3 como entradas (Pushbuttons)
+    LDI		R16, (1<<PB2) | (1<<PB3)
+    OUT		PORTB, R16   ; Activar pull-ups
+
+    ; Configurar PB0 y PB1 como salidas (para multiplexar los displays)
+    LDI		R16, (1<<PB0) | (1<<PB1)
+    OUT		DDRB, R16
+
+;----------------------------------------------------------------------------------------------------------
+
+    ; Habilitar interrupciones por cambio de pin en PORTB
+    LDI		R16, (1<<PCIE0)
+    STS		PCICR, R16
+
+    ; Habilitar interrupciones en PB2 y PB3
+    LDI		R16, (1<<PCINT2) | (1<<PCINT3)
+    STS		PCMSK0, R16
+
+    ; Habilitar interrupciones por overflow en Timer0
+    LDI		R16, (1<<TOIE0)
+    STS		TIMSK0, R16
+
+    ; Inicializar contadores
+    CLR     COUNTER     ; Dígito de unidades
+    CLR     OVCNT       ; Contador de overflow
+    CLR     TENS        ; Dígito de decenas
+    CLR     DIGIT_SEL   ; Flag de multiplexado (inicialmente muestra unidades)
+    CLR		R17         ; Para el contador de pushbuttons (en PORTC)
+
+    ; Habilitar interrupciones globales
+    SEI 
+
+LOOP:
+    OUT		PORTC, R17      
+    RJMP	LOOP           
+
+; ------------------------------------ PCINT0 ---------------------------------------------------------
+ISR_PCINT0:
+    PUSH	R16         ; Guarda el contenido de R16 en la pila 
+    IN		R16, PINB 
+    SBRS	R16, PB2       
+    RJMP	INCREMENTAR
+    SBRS	R16, PB3       
+    RJMP	DECREMENTAR
+    RJMP	FIN_ISR         
+    
+INCREMENTAR:
+    CPI		R17, 0X0F       
+    BRNE	NO_OVERFLOW_INC  
+    CLR		R17              
+    RJMP	FIN_ISR
+    
+NO_OVERFLOW_INC:
+    INC		R17            
+    RJMP	FIN_ISR
+    
+DECREMENTAR:
+    CPI		R17, 0X00       
+    BRNE	NO_OVERFLOW_DEC 
+    LDI		R17, 0X0F       
+    RJMP	FIN_ISR
+    
+NO_OVERFLOW_DEC:
+    DEC		R17            
+    RJMP	FIN_ISR
+    
+FIN_ISR:
+    POP		R16           
+    RETI
+
+;-------------------------------- TIMER0 OVERFLOW ----------------------------------------------
+ISR_TIMER0:
+    LDI     R19, (1 << TOV0)
+    OUT     TIFR0, R19
+    LDI     R19, 246
+    OUT     TCNT0, R19
+
+    ; Actualización de contadores:
+    INC     OVCNT
+    CPI     OVCNT, 100
+    BRNE    SKIP_SECOND_UPDATE
+    CLR     OVCNT
+
+    ; Actualizar el dígito de unidades
+    INC     COUNTER
+    CPI     COUNTER, 0x0A
+    BRNE    UPDATE_DONE
+    CLR     COUNTER
+
+    ; Al llegar a 10, incrementamos las decenas
+    INC     TENS
+    CPI     TENS, 0x0A   ; Reinicia en 10 (0 a 9)
+    BRNE    UPDATE_DONE
+    CLR     TENS
+UPDATE_DONE:
+SKIP_SECOND_UPDATE:    
+
+    ; --- Multiplexado de displays ---
+    SBRS    DIGIT_SEL, 0          ; Si bit 0 = 1, saltar a mostrar decenas
+    RJMP    DISPLAY_UNITS
+
+DISPLAY_TENS:
+    ; - Limpiar PB0 y PB1, luego activar PB1 (PB0=0, PB1=1)
+    IN      R18, PORTB
+    ANDI    R18, ~((1<<PB0) | (1<<PB1))
+    ORI     R18, (1<<PB1)
+    OUT     PORTB, R18
+    ; Cargar patrón de decenas desde la tabla:
+    LDI     XL, 0x00        
+    LDI     XH, 0x01
+    ADD     XL, TENS        
+    LD      R19, X         
+    OUT     PORTD, R19      
+    RJMP    TOGGLE_MULTIPLEX
+
+DISPLAY_UNITS:
+    ; - Limpiar PB0 y PB1, luego activar PB0 (PB0=1, PB1=0)
+    IN      R18, PORTB
+    ANDI    R18, ~((1<<PB0) | (1<<PB1))
+    ORI     R18, (1<<PB0)
+    OUT     PORTB, R18
+
+    ; Cargar combinacion
+    LDI     XL, 0x00        
+    LDI     XH, 0x01
+    ADD     XL, COUNTER     
+    LD      R19, X         
+    OUT     PORTD, R19      
+
+TOGGLE_MULTIPLEX:
+    ; Alternar el flag para el multiplexado: invierte bit 0 de DIGIT_SEL
+    LDI     R18, 0x01
+    EOR     DIGIT_SEL, R18
+    RETI
+
+;-------------------- Inicializar Timer0 con prescaler -------------------------------
+INIT_TMR0:
+    ; Configurar Timer0 en modo normal con prescaler = 1024:
+    LDI     TEMP, (1<<CS02) | (1<<CS00)
+    OUT     TCCR0B, TEMP
+
+    ; Precargar TCNT0 para overflow en ~10ms (256 - 246 = 10 ticks)
+    LDI     TEMP, 246
+    OUT     TCNT0, TEMP
+
+    RET
