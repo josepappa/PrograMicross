@@ -1,0 +1,148 @@
+/*
+ * Lab4.c
+ *
+ * Created: 02/04/2025 3:44 
+ * Author: jargu
+ * Description: Lab4-Micros
+ */
+//
+// Encabezado (Libraries)
+#define F_CPU 16000000 
+#include <avr/io.h>
+#include <avr/interrupt.h>
+
+// variables
+uint8_t cont;
+uint8_t tov_val = 236;
+uint8_t alternador;
+uint8_t traductor[] = {0x01, 0x4F, 0x12, 0x06, 0x4C, 0x24, 0x20, 0x0F, 0x00, 0x04, 0x08, 0x60, 0x31, 0x42, 0x30, 0x38};
+uint8_t valor_dis;
+uint8_t bit_less_sig;
+uint8_t bit_more_sig;
+//
+// Function prototypes
+void setup();
+void comparar();
+
+
+// Main Function
+int main(void)
+{
+	setup();
+	while (1) 	
+	{
+		valor_dis = ADCH;
+		bit_less_sig = valor_dis & 0x0F;
+		bit_more_sig = (valor_dis >> 4) & 0x0F;
+		
+		comparar(); 
+		
+	}	
+}
+
+// NON-Interrupt subroutines
+void setup()
+{
+	cli ();
+	
+	UCSR0B = 0x00; // desactivar comunicación serial
+	
+	DDRD	= 0xFF; // salidas para  PORTD
+	PORTD	= 0X00; // apagar PORTD
+	
+	DDRB	= 0x20; // entradas PB0 y PB1, salida PB5 (led comparador)
+	PORTB	= 0x03; // activar pull up para PB0 y PB1
+
+	
+	// habilitar PCINT0 para PB0 y PB1
+	PCICR	|= (1 << PCIE0); 
+	PCMSK0	|= (1 << PCINT0) | (1 << PCINT1); // habilitar interrupciones para PB0 y PB1
+	
+	DDRC	= 0x07; // PC0, PC1, PC2 salidas
+
+	CLKPR = (1 << CLKPCE);
+	TCCR0B |= (1 << CS02) | (1 << CS00);
+	TCNT0 = tov_val;
+	TIMSK0 = (1 << TOIE0);
+
+	ADCSRA |= (1 << ADSC);
+	
+	alternador = 0;
+	cont = 0;
+	
+
+	ADMUX = 0;
+	ADMUX |= (1 << REFS0); // Usa AVcc como referencia con capacitor en AREF
+	ADMUX |= (1 << ADLAR); // Ajuste a la izquierda (solo necesitas ADCH si haces lectura de 8 bits)
+	ADMUX |= (1 << MUX0) | (1 << MUX1) | (1 << MUX2); // Selecciona el canal ADC 7
+
+	
+	ADCSRA = 0;
+	ADCSRA |= (1 << ADPS1) | (1 << ADPS0); // Prescaler = 8
+	ADCSRA |= (1 << ADEN); // Habilita el ADC
+	ADCSRA |= (1 << ADIE); // Habilita interrupciones del ADC
+	ADCSRA |= (1 << ADSC); // Inicia la conversión
+
+	sei ();
+}
+
+void comparar(){
+	if (valor_dis > cont){
+		PORTB |= (1 << PORTB5);
+	}
+	else if (valor_dis <= cont ){
+		PORTB &= ~(1 << PORTB5);
+	}
+	{
+	}
+}
+
+
+
+// Interrupt routines
+ISR(PCINT0_vect)
+{
+	if (!(PINB & (1 << PORTB0)))
+	{
+		cont++;	
+	}
+	if (!(PINB & (1 << PORTB1)))
+	{
+		cont--;
+	}
+}
+ISR(TIMER0_OVF_vect)
+{
+	TCNT0 = tov_val;
+	switch(alternador)
+	{
+		case 0: // Cuando se enciende PC0, mostrar count
+		PORTC = 1;
+		
+		//PORTC |= (1 << PORTC0);       // Activa solo PC0 (desactiva PC1 y PC2)
+		//PORTC &= ~(1 << PORTC2);
+		
+		PORTD = cont;
+		alternador++;
+		break;
+		case 1: // Cuando se enciende PC1, mostrar less
+		PORTC = 2;
+		PORTD = traductor[bit_less_sig];
+		alternador++;
+		break;
+		case 2: // Cuando se enciende PC2, mostrar more
+		PORTC = 4;
+		PORTD = traductor[bit_more_sig];
+		alternador = 0;
+		break;
+		default:
+		break;
+
+	}
+	
+}
+
+ISR(ADC_vect)
+{
+	ADCSRA |= (1 << ADSC);
+}
