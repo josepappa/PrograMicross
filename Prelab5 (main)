@@ -1,0 +1,58 @@
+/*
+ * PreLab5.c
+ *
+ * Created: 4/9/2025 12:17:01 AM
+ * Author : jargu
+ */ 
+
+
+// Encabezado (Libraries)
+#include <avr/io.h>
+#include <avr/interrupt.h>
+#include "PWM.h"
+
+
+// Function prototypes
+void setup();
+void PWM1_Setup(uint16_t periodo, uint16_t prescaler);
+void DUTYCYCLE(uint8_t adc_val, uint8_t duty_inf, uint8_t duty_sup);
+
+//
+// Main Function
+int main(void)
+{
+	setup();
+	PWM1_Setup(312,64);
+	while (1)
+	{
+		DUTYCYCLE(ADCH,7,37);
+	}
+}
+//
+// NON-Interrupt subroutines
+void setup(){
+	cli();
+	
+	//Configuramos el ADC 
+	ADMUX = 0;
+	ADMUX |= (1 << REFS0) | (1 << ADLAR) | (1 << MUX0) | (1 << MUX1) | (1 << MUX2); 
+
+	ADCSRA = 0;
+	ADCSRA |= (1 << ADPS1) | (1 << ADPS0) | (1 << ADEN) | (1 << ADIE) | (1 << ADSC);
+	
+	//configuramos el pin D6 para sacar el pwm
+	DDRB |= (1 << DDB1);
+	
+	//Configuramos la frecuencia de micro a 1MHz
+	CLKPR = (1 << CLKPCE);
+	CLKPR = (1 << CLKPS2);	
+	
+	sei();
+}
+//
+// Interrupt routines
+ISR(ADC_vect){
+	ADCSRA |= (1 << ADSC);
+	
+} 
+
