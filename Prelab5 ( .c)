@@ -1,0 +1,49 @@
+/*
+ * PWM.c
+ *
+ * Created: 4/9/2025 1:09:27 AM
+ *  Author: jargu
+ */ 
+
+#include <avr/io.h>
+#include "PWM.h"
+
+void PWM1_Setup(uint16_t periodo, uint16_t prescaler) {
+	//0CR1A ES LA SALIDA EN PB1
+	DDRB |= (1 << DDB1);
+	
+	//CONFIGURAMOS FASTPWM
+	TCCR1A = (1 << COM1A1) | (1 << WGM11);
+	TCCR1B = (1 << WGM12) | (1 << WGM13);
+	
+	 
+	ICR1 = periodo;
+	
+	
+	switch (prescaler) {
+		case 1:
+		TCCR1B |= (1 << CS10);
+		break;
+		case 8:
+		TCCR1B |= (1 << CS11);
+		break;
+		case 64:
+		TCCR1B |= (1 << CS11) | (1 << CS10);
+		break;
+		case 256:
+		TCCR1B |= (1 << CS12);
+		break;
+		case 1024:
+		TCCR1B |= (1 << CS12) | (1 << CS10);
+		break;
+		default:
+		// usar prescaler = 64 por defecto
+		TCCR1B |= (1 << CS11) | (1 << CS10);
+		break;
+	}
+}
+
+void DUTYCYCLE(uint8_t adc_val, uint8_t duty_inf, uint8_t duty_sup){
+	uint16_t duty = (((adc_val*(duty_sup - duty_inf))/255)+duty_inf);
+	OCR1A = duty;
+}
