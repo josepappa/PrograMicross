@@ -1,0 +1,21 @@
+/*
+ * PWM.h
+ *
+ * Created: 4/9/2025 1:09:50 AM
+ *  Author: jargu
+ */ 
+
+
+#ifndef PWM_H_
+#define PWM_H_
+#include <avr/io.h>
+
+
+//SETUP DEL PWM
+void PWM1_Setup(uint16_t periodo, uint16_t prescaler);
+
+//AJUSTAR DUTYCYCLE
+void DUTYCYCLE(uint8_t adc_val, uint8_t duty_inf, uint8_t duty_sup);
+
+
+#endif /* PWM_H_ */
