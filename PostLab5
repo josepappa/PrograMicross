@@ -1,0 +1,140 @@
+/*
+ * PostLab5-Micros.c
+ *
+ * Created: 4/22/2025 12:06:27 AM
+ * Author : jargu
+ */ 
+
+// Encabezado (Libraries)
+#include <avr/io.h>
+#include <avr/interrupt.h>
+#include "PWM.h"
+#include "PWM2.h"
+#include "PWM3.h"
+
+
+
+volatile uint8_t adc_result_servo1 = 0;
+volatile uint8_t adc_result_servo2 = 0;
+volatile uint8_t adc_result3 = 0;
+volatile uint8_t pin_actual = 0;
+
+
+// Function prototypes
+void setup();
+
+void PWM1_Setup(uint16_t periodo, uint16_t prescaler);
+void DUTYCYCLE(uint8_t adc_result_servo1, uint8_t duty_inf, uint8_t duty_sup);
+
+
+void PWM2_Setup(uint16_t periodo, uint16_t prescaler); 
+void DUTYCYCLE2(uint8_t adc_result_servo2, uint8_t duty_inf, uint8_t duty_sup);
+
+void initTIMER0();
+
+
+//
+// Main Function
+int main(void)
+{
+	setup();
+	PWM1_Setup(312,64);
+	PWM2_Setup(312,64);
+    initTIMER0();
+
+	
+	while (1)
+	{
+		DUTYCYCLE(adc_result_servo1,7,37);
+		DUTYCYCLE2(adc_result_servo2,7,37); 
+	
+	}
+}
+//
+// NON-Interrupt subroutines
+void setup(){
+	cli();
+	
+	//Configuramos el ADC 
+	ADMUX = 0;
+	ADMUX |= (1 << REFS0) | (1 << ADLAR) ;
+	ADMUX |= (1 << MUX1) | (1 << MUX2); 
+	ADCSRA = 0;
+	ADCSRA |= (1 << ADPS1) | (1 << ADPS0) | (1 << ADEN) | (1 << ADIE) | (1 << ADSC);
+	
+	
+	//PWM EN PB0 
+	DDRB |= (1 << DDB0); // LED
+	PORTB &= ~(1 << PORTB0);
+	
+	//PWM EN PB1
+	DDRB |= (1 << DDB1); // SERVO 1
+	//PWM EN PB2
+	DDRB |= (1 << DDB2); // SERVO 2
+	
+	// 1MHz
+	CLKPR = (1 << CLKPCE);
+	CLKPR = (1 << CLKPS2);	
+	
+	
+	sei();
+}
+
+// Interrupt routines
+ISR(ADC_vect){
+	
+			if (pin_actual == 0) {
+			ADMUX = 0;
+			ADMUX |= (1 << REFS0) | (1 << ADLAR) ;
+			ADMUX |= (1 << MUX1) | (1 << MUX2); // Voy a ADC6
+			adc_result_servo1 = ADCH;
+
+			
+			pin_actual = 1;
+		}
+		else if (pin_actual == 1){
+			ADMUX = 0;
+			ADMUX |= (1 << REFS0) | (1 << ADLAR) ;
+			ADMUX |= (1 << MUX0) | (1 << MUX1) | (1 << MUX2); // Voy a ADC7
+			adc_result_servo2 = ADCH;
+
+			
+			pin_actual = 2;
+		}
+		
+		// ADC en PINC5
+		else if (pin_actual == 2){
+			ADMUX = 0;
+			ADMUX |= (1 << REFS0) | (1 << ADLAR);
+			ADMUX |= (1 << MUX0) | (1 << MUX2); // Voy a ADC5
+			
+			uint8_t adc_original = ADCH;
+			adc_result3 = ((uint16_t)adc_original * 155) / 255 + 100; // Escalado a 100–255
+
+			if (TCNT0 >= adc_result3){
+				PORTB &= ~(1 << PORTB0);
+			}
+
+			pin_actual = 0;
+		}
+
+
+			
+		// Iniciar siguiente conversión
+		ADCSRA |= (1 << ADSC);
+	}
+	
+ISR(TIMER0_OVF_vect){
+	TCNT0 = 100;
+	PORTB |= (1 << PORTB0);
+}
+
+	
+
+	
+
+
+
+
+
+
