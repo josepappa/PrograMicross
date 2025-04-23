@@ -1,0 +1,86 @@
+/*
+ * PreLab6.c
+ *
+ * Created: 4/23/2025 10:21:20 AM
+ * Author : jargu
+ */ 
+
+
+
+
+// Encabezado (Libraries)
+#include <avr/io.h>
+#include <avr/interrupt.h>
+
+/*********************************/
+// Function prototypes
+void setup();
+void initUART();
+void writeCHAR(char caracter); 
+
+
+/*********************************/
+// Main Function
+int main(void)
+{
+	setup(); 
+	initUART(); 
+	writeCHAR('A'); 
+	
+	while (1)
+	{
+		
+	}
+}
+/*********************************/
+// NON-Interrupt subroutines
+void setup()
+{
+	cli();
+	DDRB = 0XFF;
+	PORTB = 0X00;
+
+	DDRC = 0XFF;
+	PORTC = 0X00;
+	
+
+	
+	sei();
+}
+
+void initUART()
+{
+	DDRD	|= (1 << DDD1); // PD1 (TX) como salida
+	DDRD	&= ~(1 << DDD0); // PD0 (RX) como entrada
+	
+	// Configurar UCSR0A
+	UCSR0A	= 0; 
+	
+	// Configurar UCSR0B
+	// Habilita interrupciones por recepcion. Habilita Tx y Rx
+	UCSR0B	= (1 << RXCIE0) | (1 << RXEN0) | (1 << TXEN0); 
+	
+	// Configurar UCSR0C 
+	// Asíncrono, sin polaridad, 1 stop bit, 8 bits de datos
+	UCSR0C	= (1 << UCSZ01) | (1 << UCSZ00); 
+	
+	// Configurar BAUDRATE.  UBRR0 = 103 --> 9600 @ 16MHz
+	UBRR0	= 103;
+}
+
+void writeCHAR(char caracter)
+{
+	while ((UCSR0A & (1 << UDRE0)) == 0); 
+	UDR0 = caracter; 
+}
+
+/*********************************/
+// Interrupt routines
+ISR(USART_RX_vect)
+{
+	char temporal = UDR0; 
+	PORTB = temporal;
+	PORTC = (temporal >> 4);
+	writeCHAR(temporal); 
+}
+
